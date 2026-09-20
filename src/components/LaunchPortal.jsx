@@ -14,7 +14,7 @@ export function LaunchPortal({ onLaunchComplete, soundEnabled, onToggleSound }) 
   const fireworksRef = useRef([]);
   const particlesRef = useRef([]);
 
-  // Canvas for Starfield (idle/counting) and Fireworks (crackers)
+  // Canvas for warm ambient dust/particles (idle) and Fireworks (crackers)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -29,42 +29,43 @@ export function LaunchPortal({ onLaunchComplete, soundEnabled, onToggleSound }) 
     };
     window.addEventListener('resize', handleResize);
 
-    // Background stars
-    const numStars = 220;
-    const stars = Array.from({ length: numStars }, () => ({
-      x: (Math.random() - 0.5) * width,
-      y: (Math.random() - 0.5) * height,
-      z: Math.random() * width,
-      size: Math.random() * 2 + 0.8,
-      color: Math.random() > 0.4 ? '#00FF66' : Math.random() > 0.5 ? '#00e5ff' : '#fbbf24'
+    // Warm ambient floating motes for idle phase
+    const numMotes = 70;
+    const motes = Array.from({ length: numMotes }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: (Math.random() - 0.5) * 0.45,
+      vy: -0.3 - Math.random() * 0.4,
+      size: Math.random() * 2.8 + 1.2,
+      color: Math.random() > 0.5 ? 'rgba(184, 82, 38, 0.4)' : Math.random() > 0.5 ? 'rgba(217, 119, 70, 0.35)' : 'rgba(245, 158, 11, 0.3)'
     }));
 
-    // Firework rocket spawner
+    // Firework rocket spawner for crackers phase
     const spawnRocket = () => {
       fireworksRef.current.push({
-        x: width * (0.1 + Math.random() * 0.8),
+        x: width * (0.15 + Math.random() * 0.7),
         y: height,
-        targetY: height * (0.1 + Math.random() * 0.45),
-        speed: 10 + Math.random() * 6,
-        color: ['#00FF66', '#00e5ff', '#fbbf24', '#f43f5e', '#a855f7', '#ffffff', '#fb923c'][Math.floor(Math.random() * 7)],
+        targetY: height * (0.12 + Math.random() * 0.42),
+        speed: 11 + Math.random() * 6,
+        color: ['#B85028', '#C85A32', '#F59E0B', '#10B981', '#06B6D4', '#8B5CF6', '#FFFFFF'][Math.floor(Math.random() * 7)],
         trail: []
       });
     };
 
     const explodeRocket = (x, y, color) => {
-      const n = 90 + Math.floor(Math.random() * 50);
+      const n = 95 + Math.floor(Math.random() * 50);
       for (let i = 0; i < n; i++) {
         const angle = Math.random() * Math.PI * 2;
-        const speed = Math.random() * 8 + 2;
+        const speed = Math.random() * 8.5 + 2.5;
         particlesRef.current.push({
           x, y,
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
           alpha: 1,
-          decay: 0.011 + Math.random() * 0.014,
+          decay: 0.012 + Math.random() * 0.015,
           color,
           size: Math.random() * 3.5 + 1.5,
-          sparkle: Math.random() > 0.45
+          sparkle: Math.random() > 0.4
         });
       }
     };
@@ -75,37 +76,16 @@ export function LaunchPortal({ onLaunchComplete, soundEnabled, onToggleSound }) 
       crackerInterval = setInterval(() => {
         spawnRocket();
         spawnRocket();
-      }, 320);
-      for (let i = 0; i < 5; i++) setTimeout(spawnRocket, i * 120);
+      }, 300);
+      for (let i = 0; i < 5; i++) setTimeout(spawnRocket, i * 110);
     }
 
     const render = () => {
-      ctx.fillStyle = phase === 'crackers' ? 'rgba(4, 7, 5, 0.2)' : 'rgba(5, 8, 6, 0.95)';
-      ctx.fillRect(0, 0, width, height);
+      if (phase === 'crackers' || phase === 'completing') {
+        // Deep festive overlay for crisp firework contrast
+        ctx.fillStyle = 'rgba(28, 18, 14, 0.28)';
+        ctx.fillRect(0, 0, width, height);
 
-      if (phase !== 'crackers') {
-        const cx = width / 2, cy = height / 2;
-        const speed = phase === 'counting' ? 20 : 2.5;
-        stars.forEach(star => {
-          star.z -= speed;
-          if (star.z <= 0) {
-            star.z = width;
-            star.x = (Math.random() - 0.5) * width;
-            star.y = (Math.random() - 0.5) * height;
-          }
-          const k = 280 / star.z;
-          const px = star.x * k + cx, py = star.y * k + cy;
-          if (px >= 0 && px <= width && py >= 0 && py <= height) {
-            const s = (1 - star.z / width) * star.size * (phase === 'counting' ? 2.2 : 1.2);
-            ctx.beginPath();
-            ctx.arc(px, py, Math.max(0.5, s), 0, Math.PI * 2);
-            ctx.fillStyle = star.color;
-            ctx.shadowBlur = phase === 'counting' ? 14 : 4;
-            ctx.shadowColor = star.color;
-            ctx.fill();
-          }
-        });
-      } else {
         // Rockets
         for (let i = fireworksRef.current.length - 1; i >= 0; i--) {
           const r = fireworksRef.current[i];
@@ -115,10 +95,10 @@ export function LaunchPortal({ onLaunchComplete, soundEnabled, onToggleSound }) 
           ctx.beginPath();
           r.trail.forEach((p, idx) => idx === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
           ctx.strokeStyle = r.color;
-          ctx.lineWidth = 2.5;
+          ctx.lineWidth = 2.8;
           ctx.stroke();
           ctx.beginPath();
-          ctx.arc(r.x, r.y, 3.5, 0, Math.PI * 2);
+          ctx.arc(r.x, r.y, 4, 0, Math.PI * 2);
           ctx.fillStyle = '#ffffff';
           ctx.shadowBlur = 12;
           ctx.shadowColor = r.color;
@@ -141,6 +121,20 @@ export function LaunchPortal({ onLaunchComplete, soundEnabled, onToggleSound }) 
           ctx.fill();
           ctx.restore();
         }
+      } else {
+        // Clear canvas softly for warm ambient floating motes
+        ctx.clearRect(0, 0, width, height);
+        motes.forEach(m => {
+          m.y += m.vy;
+          m.x += m.vx;
+          if (m.y < -10) { m.y = height + 10; m.x = Math.random() * width; }
+          if (m.x < -10) m.x = width + 10;
+          if (m.x > width + 10) m.x = -10;
+          ctx.beginPath();
+          ctx.arc(m.x, m.y, m.size, 0, Math.PI * 2);
+          ctx.fillStyle = m.color;
+          ctx.fill();
+        });
       }
 
       animationFrameRef.current = requestAnimationFrame(render);
@@ -154,7 +148,7 @@ export function LaunchPortal({ onLaunchComplete, soundEnabled, onToggleSound }) 
     };
   }, [phase]);
 
-  // Clicking the launch button -> straight to 3-2-1 countdown (no video)
+  // Clicking the launch button -> countdown -> crackers -> redirect
   const handleLaunchClick = () => {
     soundFX.playClick();
     soundFX.playChargeUp(3.2);
@@ -171,7 +165,7 @@ export function LaunchPortal({ onLaunchComplete, soundEnabled, onToggleSound }) 
       soundFX.playCrackersExplosion();
       soundFX.playWelcomeChime();
 
-      // Open website after 4.5s of crackers celebration
+      // Open website after celebration
       setTimeout(() => {
         setPhase('completing');
         if (openInNewTab) {
@@ -189,303 +183,266 @@ export function LaunchPortal({ onLaunchComplete, soundEnabled, onToggleSound }) 
     : 0;
 
   return (
-    <div
-      className={`launch-portal-wrapper ${phase === 'completing' ? 'fading-out' : ''}`}
-      style={{ overflowY: 'auto', padding: '2rem 1rem' }}
-    >
+    <div className={`launch-portal-wrapper warm-theme ${phase === 'completing' ? 'fading-out' : ''}`}>
       <canvas ref={canvasRef} className="launch-canvas" />
-      <div className="cyber-grid" />
 
-      {/* Sound Toggle */}
-      <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 50 }}>
-        <button onClick={onToggleSound} className="btn-sound-toggle"
-          title={soundEnabled ? 'Mute' : 'Enable Sound'}>
-          {soundEnabled ? (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
-            </svg>
-          ) : (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-              <line x1="23" y1="9" x2="17" y2="15" /><line x1="17" y1="9" x2="23" y2="15" />
-            </svg>
-          )}
-        </button>
-      </div>
+      {/* Warm Ambient Diffuse Lighting Orbs */}
+      <div className="warm-ambient-orb-1" />
+      <div className="warm-ambient-orb-2" />
 
       {/* ============================================================
-          STAGE 1 — IDLE: INAUGURATION SCREEN
+          STAGE 1 — IDLE: WARM AESTHETIC INAUGURAL PORTAL
           ============================================================ */}
       {phase === 'idle' && (
-        <div className="launch-center-card" style={{ maxWidth: '860px', zIndex: 10 }}>
+        <div style={{ width: '100%', position: 'relative', zIndex: 10, padding: '1.5rem 1.25rem 3.5rem 1.25rem' }}>
 
-          {/* ─── 1. KEC COLLEGE LOGO AT TOP ─── */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginBottom: '1.25rem',
-            width: '100%'
-          }}>
-            <div style={{
-              background: '#ffffff',
-              padding: '12px 32px',
-              borderRadius: '20px',
-              boxShadow: '0 12px 35px rgba(0,0,0,0.65), 0 0 28px rgba(0,255,102,0.35)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: '2px solid rgba(0, 255, 102, 0.45)'
-            }}>
-              <img
-                src="/kec-logo.png"
-                alt="Kongu Engineering College"
-                style={{ height: '88px', width: 'auto', maxWidth: '380px', objectFit: 'contain', display: 'block' }}
-              />
-            </div>
-          </div>
-
-          {/* ─── 2. MADC OFFICIAL PHOTO IMAGE LOGO ─── */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginBottom: '1.5rem',
-            width: '100%'
-          }}>
-            <div style={{
-              position: 'relative',
-              padding: '12px 28px',
-              borderRadius: '24px',
-              background: 'radial-gradient(ellipse at center, rgba(0, 35, 15, 0.85) 0%, rgba(4, 8, 6, 0.95) 100%)',
-              border: '2px solid rgba(0, 255, 102, 0.65)',
-              boxShadow: '0 0 45px rgba(0, 255, 102, 0.45), inset 0 0 25px rgba(0, 255, 102, 0.2)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <img
-                src="/madc-logo.png"
-                alt="MADC - Mobile Application Development Club"
-                style={{
-                  height: '110px',
-                  width: 'auto',
-                  maxWidth: '380px',
-                  objectFit: 'contain',
-                  filter: 'drop-shadow(0 0 20px rgba(0, 255, 102, 0.75))',
-                  display: 'block'
-                }}
-              />
-            </div>
-          </div>
-
-          {/* ─── ACCREDITATION BADGE ─── */}
-          <div className="kec-badge-pill" style={{
-            borderColor: 'rgba(0, 255, 102, 0.5)',
-            color: '#00FF66',
-            fontSize: '0.83rem',
-            padding: '5px 16px',
-            marginBottom: '1.35rem'
-          }}>
-            <span style={{
-              width: '8px', height: '8px', borderRadius: '50%',
-              backgroundColor: '#00FF66', display: 'inline-block',
-              boxShadow: '0 0 10px #00FF66'
-            }} />
-            Autonomous • Affiliated to Anna University • Accredited by NAAC with 'A++' Grade
-          </div>
-
-          {/* ─── OPENING HEADLINE & TAGLINE ─── */}
-          <div style={{ marginBottom: '1.65rem', maxWidth: '700px' }}>
-            <h2 style={{
-              fontSize: '0.95rem',
-              letterSpacing: '0.24em',
-              color: '#00FF66',
-              textTransform: 'uppercase',
-              marginBottom: '0.45rem',
-              fontFamily: 'var(--font-mono)',
-              fontWeight: 700
-            }}>
-              ✦ Grand Inaugural Ceremony ✦
-            </h2>
-            <h1 style={{
-              fontSize: 'clamp(2rem, 4.6vw, 3.15rem)',
-              lineHeight: 1.15,
-              fontWeight: 800,
-              color: '#ffffff',
-              marginBottom: '0.8rem'
-            }}>
-              Where Code Meets <span style={{ color: '#00FF66', textShadow: '0 0 28px rgba(0,255,102,0.65)' }}>Innovation</span>
-            </h1>
-            <p style={{
-              color: '#cbd5e1',
-              fontSize: '1.05rem',
-              lineHeight: 1.65,
-              maxWidth: '660px',
-              margin: '0 auto'
-            }}>
-              With immense pride and honor, we inaugurate the official digital portal of the Mobile Application Development Club at Kongu Engineering College — inspiring students to architect transformative Android, iOS, and cross-platform solutions.
-            </p>
-          </div>
-
-          {/* ─── PRINCIPAL PORTRAIT CARD ─── */}
-          <div style={{
-            background: 'radial-gradient(ellipse at center, rgba(10, 18, 34, 0.96) 0%, rgba(4, 7, 5, 0.92) 100%)',
-            border: '2px solid rgba(0, 255, 102, 0.45)',
-            borderRadius: '28px',
-            padding: '2.25rem 2.75rem',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
-            boxShadow: '0 25px 65px -10px rgba(0,0,0,0.9), 0 0 55px rgba(0,255,102,0.28)',
-            marginBottom: '2rem',
-            maxWidth: '480px',
-            width: '100%',
-            position: 'relative'
-          }}>
-            {/* Ceremonial ribbon */}
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '4px 16px',
-              borderRadius: '9999px',
-              background: 'rgba(0,255,102,0.14)',
-              border: '1px solid rgba(0,255,102,0.4)',
-              color: '#00FF66',
-              fontSize: '0.73rem',
-              fontWeight: 700,
-              fontFamily: 'var(--font-mono)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.07em',
-              marginBottom: '1.35rem'
-            }}>
-              ✦ Official Website Inaugurator ✦
-            </div>
-
-            {/* Big principal portrait */}
-            <div style={{ position: 'relative', marginBottom: '1.5rem' }}>
-              <img
-                src="/principal.jpg"
-                alt="Dr. R. Parameshwaran — Principal, KEC"
-                style={{
-                  width: '220px',
-                  height: '220px',
-                  borderRadius: '50%',
-                  objectFit: 'cover',
-                  objectPosition: 'center top',
-                  border: '5px solid #00FF66',
-                  boxShadow: '0 0 45px rgba(0,255,102,0.6), 0 0 90px rgba(0,229,255,0.3)',
-                  display: 'block'
-                }}
-              />
-              {/* Graduation badge */}
+          {/* ─── TOP NAVIGATION BAR ─── */}
+          <header className="warm-header">
+            {/* Logos: KEC + MADC */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
               <div style={{
-                position: 'absolute',
-                bottom: '6px',
-                right: '6px',
-                width: '40px',
-                height: '40px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #00FF66, #00e5ff)',
-                color: '#000',
+                background: '#ffffff',
+                padding: '6px 14px',
+                borderRadius: '12px',
+                boxShadow: '0 4px 15px rgba(74, 40, 24, 0.08)',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '1.25rem',
-                boxShadow: '0 0 16px #00FF66',
-                border: '2px solid rgba(0,0,0,0.3)'
+                border: '1px solid rgba(184, 82, 38, 0.15)'
               }}>
-                🎓
+                <img src="/kec-logo.png" alt="Kongu Engineering College" style={{ height: '34px', width: 'auto', display: 'block' }} />
+              </div>
+
+              <div style={{
+                background: 'radial-gradient(ellipse at center, rgba(40, 25, 20, 0.95) 0%, rgba(20, 12, 10, 0.98) 100%)',
+                padding: '5px 12px',
+                borderRadius: '12px',
+                border: '1px solid rgba(184, 82, 38, 0.35)',
+                display: 'flex',
+                alignItems: 'center'
+              }}>
+                <img src="/madc-logo.png" alt="MADC Club" style={{ height: '32px', width: 'auto', display: 'block' }} />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: '1.05rem', fontWeight: 800, color: '#2B1911', fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>
+                  MADC<span style={{ color: '#B85028' }}>'26</span>
+                </span>
+                <span style={{ fontSize: '0.72rem', color: '#7D6B60', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+                  Kongu Engineering College • Autonomous
+                </span>
               </div>
             </div>
 
-            {/* Name below image */}
-            <h2 style={{
-              fontSize: '2.1rem',
-              fontWeight: 800,
-              color: '#ffffff',
-              letterSpacing: '-0.02em',
-              marginBottom: '0.4rem',
-              lineHeight: 1.2,
-              textShadow: '0 0 22px rgba(255,255,255,0.25)'
-            }}>
-              Dr. R. Parameshwaran
-            </h2>
+            {/* Center Navigation Links (Hidden on small mobile) */}
+            <nav style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+              <a href="#home" onClick={(e) => { e.preventDefault(); soundFX.playClick(); }} style={{ color: '#2B1911', textDecoration: 'none', fontWeight: 700, fontSize: '0.92rem', borderBottom: '2px solid #B85028', paddingBottom: '2px' }}>
+                Home
+              </a>
+              <a href="#about" onClick={(e) => { e.preventDefault(); soundFX.playClick(); }} style={{ color: '#7D6B60', textDecoration: 'none', fontWeight: 600, fontSize: '0.92rem' }}>
+                About Club
+              </a>
+              <a href="#domains" onClick={(e) => { e.preventDefault(); soundFX.playClick(); }} style={{ color: '#7D6B60', textDecoration: 'none', fontWeight: 600, fontSize: '0.92rem' }}>
+                Tech Domains
+              </a>
+              <a href="#projects" onClick={(e) => { e.preventDefault(); soundFX.playClick(); }} style={{ color: '#7D6B60', textDecoration: 'none', fontWeight: 600, fontSize: '0.92rem' }}>
+                Apps & Projects
+              </a>
+            </nav>
 
-            {/* Designation below name */}
-            <div style={{
-              fontSize: '1.1rem',
-              color: '#00FF66',
-              fontWeight: 700,
-              marginBottom: '0.75rem',
-              textShadow: '0 0 12px rgba(0,255,102,0.55)'
-            }}>
-              Principal, Kongu Engineering College
+            {/* Right Action: Sound Toggle + Launch Pill */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <button
+                onClick={onToggleSound}
+                className="btn-sound-toggle"
+                style={{
+                  background: '#FFFFFF',
+                  color: '#4A2818',
+                  border: '1px solid rgba(184, 82, 38, 0.2)',
+                  boxShadow: '0 4px 12px rgba(74, 40, 24, 0.08)'
+                }}
+                title={soundEnabled ? 'Mute Sound' : 'Enable Sound'}
+              >
+                {soundEnabled ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+                  </svg>
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                    <line x1="23" y1="9" x2="17" y2="15" /><line x1="17" y1="9" x2="23" y2="15" />
+                  </svg>
+                )}
+              </button>
+
+              <button
+                onClick={handleLaunchClick}
+                className="warm-btn-primary"
+                style={{ padding: '0.65rem 1.6rem', fontSize: '0.92rem' }}
+              >
+                <span>Launch Now</span>
+              </button>
+            </div>
+          </header>
+
+          {/* ─── MAIN HERO SECTION (MATCHING SCREENSHOT) ─── */}
+          <main className="warm-hero-container">
+
+            {/* LEFT COLUMN: HERO HEADLINE & INAUGURAL DETAILS */}
+            <div>
+              {/* — MADC CLUB PRESENTS */}
+              <div className="warm-pre-tag">
+                <span>—</span>
+                <span>MADC CLUB PRESENTS</span>
+              </div>
+
+              {/* MADC'26 Main Title */}
+              <h1 className="warm-hero-title">
+                MADC<span className="warm-hero-title-accent">'26</span>
+              </h1>
+
+              {/* Short Inaugural Description */}
+              <p className="warm-hero-desc">
+                A premier internet symposium and digital gateway bringing MADC developers together for coding battles, UI challenges, and mobile app sprints — empowering next-gen Android, iOS, and Flutter innovations at Kongu Engineering College.
+              </p>
+
+              {/* Meta Row with Bullets */}
+              <div className="warm-meta-row">
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <span className="warm-meta-dot" />
+                  Sept 21, 2026
+                </span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <span className="warm-meta-dot" />
+                  Kongu Engineering College
+                </span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <span className="warm-meta-dot" />
+                  Autonomous • NAAC 'A++'
+                </span>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="warm-buttons-row">
+                <button
+                  onClick={handleLaunchClick}
+                  id="warm-launch-btn"
+                  className="warm-btn-primary"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3" />
+                  </svg>
+                  <span>Inaugurate & Launch Website</span>
+                </button>
+
+                <a
+                  href={TARGET_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => soundFX.playClick()}
+                  className="warm-btn-secondary"
+                >
+                  <span>View Live Portal ↗</span>
+                </a>
+              </div>
+
+              {/* Toggle option */}
+              <div style={{ marginBottom: '2.5rem', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: '#7D6B60', fontFamily: 'var(--font-mono)' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={openInNewTab}
+                    onChange={(e) => setOpenInNewTab(e.target.checked)}
+                    style={{ accentColor: '#B85028' }}
+                  />
+                  <span>Open target site in new tab</span>
+                </label>
+                <span>•</span>
+                <span style={{ color: '#B85028', fontWeight: 600 }}>Audio + 3-2-1 Countdown + Celebration</span>
+              </div>
+
+              {/* Countdown / Stats Row (matching 00 11 18 00 cards) */}
+              <div className="warm-timer-grid">
+                <div className="warm-timer-card">
+                  <div className="warm-timer-num">20</div>
+                  <div className="warm-timer-label">YEAR</div>
+                </div>
+                <div className="warm-timer-card">
+                  <div className="warm-timer-num">26</div>
+                  <div className="warm-timer-label">EDITION</div>
+                </div>
+                <div className="warm-timer-card">
+                  <div className="warm-timer-num">04</div>
+                  <div className="warm-timer-label">DOMAINS</div>
+                </div>
+                <div className="warm-timer-card">
+                  <div className="warm-timer-num" style={{ color: '#B85028' }}>LIVE</div>
+                  <div className="warm-timer-label">PORTAL</div>
+                </div>
+              </div>
             </div>
 
-            <div style={{
-              fontSize: '0.85rem',
-              color: '#94a3b8',
-              fontStyle: 'italic',
-              maxWidth: '360px',
-              lineHeight: 1.55,
-              borderTop: '1px solid rgba(255,255,255,0.1)',
-              paddingTop: '0.85rem',
-              marginTop: '0.2rem'
-            }}>
-              "Inspiring students to engineer solutions for campus, industry, and the nation."
+            {/* RIGHT COLUMN: PERSPECTIVE-TILTED 3D SMARTPHONE */}
+            <div className="warm-phone-stage">
+              {/* Floating Gear Widget (matches screenshot) */}
+              <div className="warm-gear-floating" title="Engineering System Core">
+                ⚙
+              </div>
+
+              {/* Floating 3D Cube (matches screenshot) */}
+              <div className="warm-cube-floating" />
+
+              {/* Smartphone Body */}
+              <div className="warm-phone-body">
+                <div className="warm-phone-screen">
+                  {/* Phone Status Bar */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.72rem', color: '#9E8B80', fontFamily: 'var(--font-mono)', marginBottom: '14px', padding: '0 4px' }}>
+                    <span>9:41</span>
+                    <div style={{ width: '42px', height: '12px', background: '#3B2D26', borderRadius: '6px' }} />
+                    <span>5G • 100%</span>
+                  </div>
+
+                  {/* Phone Header */}
+                  <div style={{ textAlign: 'center', marginBottom: '18px' }}>
+                    <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em', fontFamily: 'var(--font-display)' }}>
+                      MADC'26
+                    </div>
+                    <div style={{ fontSize: '0.68rem', color: '#B85028', fontFamily: 'var(--font-mono)', letterSpacing: '0.14em', textTransform: 'uppercase', marginTop: '2px', fontWeight: 700 }}>
+                      MADC CLUB • BUILD • WIN
+                    </div>
+                  </div>
+
+                  {/* 6 App Icon Challenge Grid Tiles (matches screenshot) */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', flex: 1 }}>
+                    <div style={{ background: '#C85A32', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', fontSize: '1.35rem', fontWeight: 800, boxShadow: '0 4px 14px rgba(200,90,50,0.3)' }}>
+                      &lt;/&gt;
+                    </div>
+                    <div style={{ background: '#4A6B82', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', fontSize: '1.3rem' }}>
+                      ☁️
+                    </div>
+                    <div style={{ background: '#3E4E59', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', fontSize: '1.3rem' }}>
+                      ⚙️
+                    </div>
+                    <div style={{ background: '#5C3D2E', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', fontSize: '1.3rem' }}>
+                      📱
+                    </div>
+                    <div style={{ background: '#2D3748', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', fontSize: '1.2rem' }}>
+                      🛡️
+                    </div>
+                    <div style={{ background: '#C85A32', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', fontSize: '1.35rem', fontWeight: 800, boxShadow: '0 4px 14px rgba(200,90,50,0.3)' }}>
+                      &lt;/&gt;
+                    </div>
+                  </div>
+
+                  {/* Bottom Phone Action bar */}
+                  <div style={{ marginTop: '14px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'center' }}>
+                    <div style={{ width: '80px', height: '4px', background: '#7D6B60', borderRadius: '2px' }} />
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
 
-          {/* ─── MAIN LAUNCH BUTTON ─── */}
-          <div style={{ position: 'relative', display: 'inline-block' }}>
-            <div className="button-pulse-beacon" style={{ borderColor: '#00FF66' }} />
-            <button
-              onClick={handleLaunchClick}
-              className="launch-trigger-button"
-              id="launch-portal-btn"
-              style={{
-                background: 'linear-gradient(135deg, #00a843 0%, #00ff66 50%, #00e5ff 100%)',
-                boxShadow: '0 0 55px rgba(0,255,102,0.7), 0 0 110px rgba(0,229,255,0.35)',
-                color: '#020403',
-                fontSize: '1.3rem',
-                padding: '1.3rem 3.2rem'
-              }}
-            >
-              <div className="button-shimmer-sweep" />
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#020403" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="5 3 19 12 5 21 5 3" />
-              </svg>
-              <span style={{ fontWeight: 800, letterSpacing: '0.06em' }}>Inaugurate & Launch Website</span>
-            </button>
-          </div>
-
-          <div style={{
-            marginTop: '1.15rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1rem',
-            fontSize: '0.82rem',
-            color: '#94a3b8',
-            fontFamily: 'var(--font-mono)',
-            flexWrap: 'wrap',
-            justifyContent: 'center'
-          }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={openInNewTab}
-                onChange={(e) => setOpenInNewTab(e.target.checked)}
-                style={{ accentColor: '#00FF66' }}
-              />
-              <span>Open in new tab</span>
-            </label>
-            <span>•</span>
-            <span style={{ color: '#00FF66' }}>3-2-1 Count ➔ Crackers Celebration ➔ Website Opens</span>
-          </div>
+          </main>
         </div>
       )}
 
@@ -493,45 +450,45 @@ export function LaunchPortal({ onLaunchComplete, soundEnabled, onToggleSound }) 
           STAGE 2 — COUNTDOWN 3-2-1
           ============================================================ */}
       {phase === 'counting' && (
-        <div className="countdown-hud-container" style={{ zIndex: 10 }}>
+        <div className="countdown-hud-container" style={{ zIndex: 30 }}>
           <div style={{
-            fontSize: '0.95rem',
-            color: '#00FF66',
+            fontSize: '1rem',
+            color: '#B85028',
             fontFamily: 'var(--font-mono)',
             textTransform: 'uppercase',
-            letterSpacing: '0.22em',
+            letterSpacing: '0.24em',
             marginBottom: '1rem',
-            fontWeight: 700
+            fontWeight: 800
           }}>
-            Inauguration Countdown
+            ✦ Inauguration Countdown ✦
           </div>
 
-          <div className="countdown-digits-wrapper">
+          <div className="countdown-digits-wrapper" style={{ boxShadow: '0 20px 50px rgba(74, 40, 24, 0.2)', border: '2px solid rgba(184, 82, 38, 0.3)' }}>
             <svg className="hud-circular-meter" viewBox="0 0 120 120">
               <defs>
-                <linearGradient id="neonGreenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#00FF66" />
-                  <stop offset="100%" stopColor="#00e5ff" />
+                <linearGradient id="warmGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#C85A32" />
+                  <stop offset="100%" stopColor="#F59E0B" />
                 </linearGradient>
               </defs>
-              <circle className="hud-meter-bg" cx="60" cy="60" r="50" />
+              <circle className="hud-meter-bg" cx="60" cy="60" r="50" style={{ stroke: 'rgba(74, 40, 24, 0.15)' }} />
               <circle
                 className="hud-meter-progress"
                 cx="60" cy="60" r="50"
-                stroke="url(#neonGreenGrad)"
+                stroke="url(#warmGrad)"
                 strokeDasharray="314"
                 strokeDashoffset={strokeDashoffset}
               />
             </svg>
-            <div className="countdown-number" style={{ textShadow: '0 0 35px #00FF66, 0 0 70px #00e5ff' }}>
+            <div className="countdown-number" style={{ color: '#2B1911', textShadow: '0 4px 20px rgba(184, 82, 38, 0.4)' }}>
               {count > 0 ? count : 'GO!'}
             </div>
           </div>
 
-          <div style={{ marginTop: '1.75rem', fontSize: '1.2rem', fontWeight: 700, color: '#ffffff', textAlign: 'center' }}>
-            {count === 3 && 'Initializing MADC Mobile Systems...'}
-            {count === 2 && 'Synchronizing KEC Engineering Clusters...'}
-            {count === 1 && 'Engaging Ceremonial Launch Sequences...'}
+          <div style={{ marginTop: '1.75rem', fontSize: '1.25rem', fontWeight: 800, color: '#2B1911', textAlign: 'center' }}>
+            {count === 3 && 'Initializing MADC Mobile Architecture...'}
+            {count === 2 && 'Connecting Kongu Engineering College Clusters...'}
+            {count === 1 && 'Launching MADC Official Portal...'}
           </div>
         </div>
       )}
@@ -547,19 +504,19 @@ export function LaunchPortal({ onLaunchComplete, soundEnabled, onToggleSound }) 
           pointerEvents: 'none'
         }}>
           <div style={{
-            background: 'radial-gradient(circle, rgba(10,18,34,0.97) 0%, rgba(4,7,5,0.93) 100%)',
-            border: '3px solid #00FF66',
+            background: 'radial-gradient(circle at center, #FFFFFF 0%, #F8F3EA 100%)',
+            border: '3px solid #B85028',
             borderRadius: '32px',
             padding: '2.5rem 3.5rem',
             textAlign: 'center',
-            boxShadow: '0 0 70px rgba(0,255,102,0.75), 0 0 140px rgba(0,229,255,0.45)',
-            maxWidth: '700px',
+            boxShadow: '0 25px 80px rgba(74, 40, 24, 0.45), 0 0 60px rgba(200, 90, 50, 0.3)',
+            maxWidth: '650px',
             width: '90%',
             animation: 'modalScaleUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)'
           }}>
             <div style={{ fontSize: '3.5rem', marginBottom: '0.5rem' }}>🎉 🎆 ✨ 🎇</div>
 
-            {/* Logos header in crackers popup */}
+            {/* Logos in celebration popup */}
             <div style={{
               display: 'flex',
               alignItems: 'center',
@@ -568,48 +525,44 @@ export function LaunchPortal({ onLaunchComplete, soundEnabled, onToggleSound }) 
               marginBottom: '1rem',
               flexWrap: 'wrap'
             }}>
-              <div style={{ background: '#ffffff', padding: '6px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center' }}>
+              <div style={{ background: '#ffffff', padding: '6px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', border: '1px solid rgba(184,82,38,0.2)', boxShadow: '0 4px 12px rgba(74,40,24,0.08)' }}>
                 <img src="/kec-logo.png" alt="KEC" style={{ height: '36px', width: 'auto' }} />
               </div>
-              <img
-                src="/madc-logo.png"
-                alt="MADC"
-                style={{
-                  height: '46px',
-                  width: 'auto',
-                  borderRadius: '8px',
-                  filter: 'drop-shadow(0 0 14px rgba(0,255,102,0.85))'
-                }}
-              />
+              <div style={{ background: '#1C120E', padding: '6px 14px', borderRadius: '12px', display: 'flex', alignItems: 'center', border: '1px solid #B85028' }}>
+                <img src="/madc-logo.png" alt="MADC" style={{ height: '38px', width: 'auto' }} />
+              </div>
             </div>
 
             <div style={{
-              fontSize: '0.9rem', color: '#00FF66',
+              fontSize: '0.9rem', color: '#B85028',
               fontFamily: 'var(--font-mono)', letterSpacing: '0.2em',
-              textTransform: 'uppercase', marginBottom: '0.5rem', fontWeight: 700
+              textTransform: 'uppercase', marginBottom: '0.5rem', fontWeight: 800
             }}>
-              Kongu Engineering College
+              Kongu Engineering College (Autonomous)
             </div>
+
             <h1 style={{
-              fontSize: 'clamp(2.2rem, 5vw, 3.5rem)',
-              fontWeight: 900, color: '#ffffff',
+              fontSize: 'clamp(2.2rem, 5vw, 3.2rem)',
+              fontWeight: 900, color: '#2B1911',
               lineHeight: 1.15, marginBottom: '0.75rem',
-              textShadow: '0 0 30px #00FF66'
+              fontFamily: 'var(--font-display)'
             }}>
-              MADC Portal <span style={{ color: '#00FF66' }}>Inaugurated!</span>
+              MADC Portal <span style={{ color: '#B85028' }}>Inaugurated!</span>
             </h1>
-            <p style={{ color: '#cbd5e1', fontSize: '1.2rem', marginBottom: '1.5rem', fontWeight: 600 }}>
-              Officially Launched by Principal <strong>Dr. R. Parameshwaran</strong>
+
+            <p style={{ color: '#604E45', fontSize: '1.15rem', marginBottom: '1.5rem', fontWeight: 600 }}>
+              Welcome to the official Mobile Application Development Club digital ecosystem.
             </p>
+
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: '0.75rem',
-              padding: '0.65rem 1.5rem',
-              background: 'rgba(0,255,102,0.15)',
+              padding: '0.75rem 1.75rem',
+              background: '#4A2818',
               borderRadius: '9999px',
-              border: '1px solid rgba(0,255,102,0.4)',
-              color: '#00FF66', fontFamily: 'var(--font-mono)', fontSize: '0.95rem'
+              color: '#FFFFFF', fontFamily: 'var(--font-mono)', fontSize: '0.95rem',
+              boxShadow: '0 8px 20px rgba(74, 40, 24, 0.3)'
             }}>
-              <span className="terminal-cursor" style={{ width: '8px', height: '14px', background: '#00FF66' }} />
+              <span className="terminal-cursor" style={{ width: '8px', height: '14px', background: '#FFFFFF' }} />
               <span>Opening Club Website now...</span>
             </div>
           </div>
