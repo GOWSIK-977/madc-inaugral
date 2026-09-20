@@ -218,24 +218,31 @@ export function LaunchPortal({ onLaunchComplete, soundEnabled, onToggleSound }) 
       </div>
 
       {/* ============================================================
-          STAGE 1 — IDLE: OFFICIAL INAUGURAL PORTAL
+          STAGE 1 — IDLE: STRAIGHT CENTERED OFFICIAL INAUGURAL PORTAL
           ============================================================ */}
       {phase === 'idle' && (
-        <div style={{ width: '100%', maxWidth: '1260px', margin: '0 auto', position: 'relative', zIndex: 10, padding: '2rem 1.25rem 4rem 1.25rem' }}>
+        <div style={{ width: '100%', maxWidth: '980px', margin: '0 auto', position: 'relative', zIndex: 10, padding: '2.5rem 1.25rem 4.5rem 1.25rem' }}>
 
-          {/* ─── 1. KEC OFFICIAL LOGO PROMINENTLY AT TOP ─── */}
+          {/* ─── 1. KEC OFFICIAL LOGO IN BIG AT THE VERY TOP ─── */}
           <div className="inaugural-top-banner">
-            <div className="inaugural-top-kec-card">
+            <div className="inaugural-top-kec-card" style={{ padding: '18px 48px', borderRadius: '28px' }}>
               <img
                 src="/kec-logo.png"
                 alt="Kongu Engineering College"
-                style={{ height: '72px', width: 'auto', maxWidth: '340px', objectFit: 'contain', display: 'block' }}
+                style={{
+                  height: '115px',
+                  width: 'auto',
+                  maxWidth: '480px',
+                  objectFit: 'contain',
+                  display: 'block',
+                  filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.06))'
+                }}
               />
             </div>
 
             <div style={{
-              marginTop: '0.85rem',
-              fontSize: '0.84rem',
+              marginTop: '1rem',
+              fontSize: '0.86rem',
               color: '#B85028',
               fontFamily: 'var(--font-mono)',
               fontWeight: 700,
@@ -245,209 +252,147 @@ export function LaunchPortal({ onLaunchComplete, soundEnabled, onToggleSound }) 
               alignItems: 'center',
               gap: '8px'
             }}>
-              <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#B85028', display: 'inline-block' }} />
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#B85028', display: 'inline-block' }} />
               Autonomous • Affiliated to Anna University • Accredited by NAAC with 'A++' Grade
             </div>
           </div>
 
-          {/* ─── 2. MAIN HERO SECTION ─── */}
-          <main className="warm-hero-container">
+          {/* ─── 2. STRAIGHT CENTERED INAUGURAL CONTENT ─── */}
+          <main className="straight-hero-container">
 
-            {/* LEFT COLUMN: OFFICIAL MADC LOGO, INAUGURAL DETAILS & GRAND LAUNCH BUTTON */}
-            <div>
-              {/* Official MADC Logo from the launching website (madc-xi.vercel.app) */}
-              <div className="inaugural-madc-logo-card">
-                <svg
-                  viewBox="0 0 460 140"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  style={{
-                    height: '62px',
-                    width: 'auto',
-                    maxWidth: '280px',
-                    filter: 'drop-shadow(0 0 16px rgba(0, 255, 102, 0.6))'
-                  }}
-                >
-                  {/* M */}
-                  <path d="M 20 120 L 20 20 L 45 20 L 65 75 L 85 20 L 110 20 L 110 120 L 88 120 L 88 50 L 71 95 L 59 95 L 42 50 L 42 120 Z" fill="#FFFFFF" />
-                  <path d="M 46 45 L 65 88 L 73 88 L 52 45 Z" fill="#00FF66" />
-                  {/* A (Android Robot) */}
-                  <g id="android-a">
-                    <line x1="165" y1="26" x2="152" y2="10" stroke="#FFFFFF" strokeWidth="6" strokeLinecap="round" />
-                    <line x1="215" y1="26" x2="228" y2="10" stroke="#FFFFFF" strokeWidth="6" strokeLinecap="round" />
-                    <path d="M 152 42 C 152 24 228 24 228 42 Z" fill="#FFFFFF" />
-                    <circle cx="170" cy="34" r="3.5" fill="#00FF66" />
-                    <circle cx="210" cy="34" r="3.5" fill="#00FF66" />
-                    <rect x="142" y="44" width="7" height="18" rx="3.5" fill="#FFFFFF" />
-                    <rect x="231" y="44" width="7" height="18" rx="3.5" fill="#FFFFFF" />
-                    <rect x="152" y="46" width="76" height="54" rx="4" fill="#FFFFFF" />
-                    <rect x="138" y="52" width="10" height="38" rx="5" fill="#FFFFFF" />
-                    <rect x="232" y="52" width="10" height="38" rx="5" fill="#FFFFFF" />
-                    <rect x="164" y="98" width="14" height="22" rx="4" fill="#FFFFFF" />
-                    <rect x="202" y="98" width="14" height="22" rx="4" fill="#FFFFFF" />
-                    <rect x="160" y="52" width="60" height="42" rx="6" fill="#00FF66" />
-                  </g>
-                  {/* D */}
-                  <path d="M 258 20 H 305 C 332 20 348 38 348 70 C 348 102 332 120 305 120 H 258 V 20 Z M 282 42 V 98 H 303 C 318 98 325 87 325 70 C 325 53 318 42 303 42 H 282 Z" fill="#FFFFFF" />
-                  {/* C */}
-                  <path d="M 430 40 C 418 24 398 20 378 20 C 352 20 335 38 335 70 C 335 102 352 120 378 120 C 400 120 420 112 432 92 L 413 80 C 405 92 393 98 378 98 C 364 98 358 87 358 70 C 358 53 364 42 378 42 C 392 42 404 48 412 60 L 430 40 Z" fill="#FFFFFF" />
-                </svg>
+            {/* Official MADC Logo taken directly from the launching website (madc-xi.vercel.app) */}
+            <div className="inaugural-madc-logo-card">
+              <svg
+                viewBox="0 0 460 140"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                style={{
+                  height: '75px',
+                  width: 'auto',
+                  maxWidth: '340px',
+                  filter: 'drop-shadow(0 0 20px rgba(0, 255, 102, 0.65))'
+                }}
+              >
+                {/* M */}
+                <path d="M 20 120 L 20 20 L 45 20 L 65 75 L 85 20 L 110 20 L 110 120 L 88 120 L 88 50 L 71 95 L 59 95 L 42 50 L 42 120 Z" fill="#FFFFFF" />
+                <path d="M 46 45 L 65 88 L 73 88 L 52 45 Z" fill="#00FF66" />
+                {/* A (Android Robot) */}
+                <g id="android-a">
+                  <line x1="165" y1="26" x2="152" y2="10" stroke="#FFFFFF" strokeWidth="6" strokeLinecap="round" />
+                  <line x1="215" y1="26" x2="228" y2="10" stroke="#FFFFFF" strokeWidth="6" strokeLinecap="round" />
+                  <path d="M 152 42 C 152 24 228 24 228 42 Z" fill="#FFFFFF" />
+                  <circle cx="170" cy="34" r="3.5" fill="#00FF66" />
+                  <circle cx="210" cy="34" r="3.5" fill="#00FF66" />
+                  <rect x="142" y="44" width="7" height="18" rx="3.5" fill="#FFFFFF" />
+                  <rect x="231" y="44" width="7" height="18" rx="3.5" fill="#FFFFFF" />
+                  <rect x="152" y="46" width="76" height="54" rx="4" fill="#FFFFFF" />
+                  <rect x="138" y="52" width="10" height="38" rx="5" fill="#FFFFFF" />
+                  <rect x="232" y="52" width="10" height="38" rx="5" fill="#FFFFFF" />
+                  <rect x="164" y="98" width="14" height="22" rx="4" fill="#FFFFFF" />
+                  <rect x="202" y="98" width="14" height="22" rx="4" fill="#FFFFFF" />
+                  <rect x="160" y="52" width="60" height="42" rx="6" fill="#00FF66" />
+                </g>
+                {/* D */}
+                <path d="M 258 20 H 305 C 332 20 348 38 348 70 C 348 102 332 120 305 120 H 258 V 20 Z M 282 42 V 98 H 303 C 318 98 325 87 325 70 C 325 53 318 42 303 42 H 282 Z" fill="#FFFFFF" />
+                {/* C */}
+                <path d="M 430 40 C 418 24 398 20 378 20 C 352 20 335 38 335 70 C 335 102 352 120 378 120 C 400 120 420 112 432 92 L 413 80 C 405 92 393 98 378 98 C 364 98 358 87 358 70 C 358 53 364 42 378 42 C 392 42 404 48 412 60 L 430 40 Z" fill="#FFFFFF" />
+              </svg>
 
-                <div style={{
-                  fontSize: '9.5px',
-                  letterSpacing: '0.24em',
-                  textTransform: 'uppercase',
-                  color: '#00FF66',
-                  fontFamily: 'var(--font-mono)',
-                  fontWeight: 700
-                }}>
-                  MOBILE APPLICATION DEVELOPMENT CLUB
-                </div>
-              </div>
-
-              {/* Ceremony Subtag */}
-              <div className="warm-pre-tag" style={{ display: 'block', marginBottom: '0.75rem' }}>
-                ✦ OFFICIAL CLUB WEBSITE LAUNCH ✦
-              </div>
-
-              {/* Headline */}
-              <h1 className="warm-hero-title" style={{ fontSize: 'clamp(2.4rem, 5.2vw, 3.8rem)', marginBottom: '1.2rem' }}>
-                Where Code Meets <span className="warm-hero-title-accent">Innovation</span>
-              </h1>
-
-              {/* Short Inaugural Description */}
-              <p className="warm-hero-desc" style={{ fontSize: '1.08rem' }}>
-                With immense pride and honor, Kongu Engineering College inaugurates the official digital portal of the <strong>Mobile Application Development Club (MADC)</strong> — architecting next-gen Android, iOS, and Flutter solutions for campus, industry, and the nation.
-              </p>
-
-              {/* Meta Row */}
-              <div className="warm-meta-row">
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <span className="warm-meta-dot" />
-                  Kongu Engineering College
-                </span>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <span className="warm-meta-dot" />
-                  Mobile Application Club
-                </span>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <span className="warm-meta-dot" />
-                  madc-xi.vercel.app
-                </span>
-              </div>
-
-              {/* ─── 3. GRAND ATTRACTIVE LAUNCH BUTTON (CENTERPIECE) ─── */}
-              <div className="grand-launch-button-wrapper">
-                {/* Outer animated pulsating aura rings */}
-                <div className="grand-beacon-ring-1" />
-                <div className="grand-beacon-ring-2" />
-
-                <button
-                  onClick={handleLaunchClick}
-                  id="grand-launch-portal-btn"
-                  className="grand-launch-btn"
-                >
-                  <div className="button-shimmer-sweep" />
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" style={{ filter: 'drop-shadow(0 0 6px rgba(0,255,102,0.8))' }}>
-                    <polygon points="5 3 19 12 5 21 5 3" />
-                  </svg>
-                  <span>Inaugurate & Launch Website</span>
-                </button>
-              </div>
-
-              {/* Open in New Tab Option */}
-              <div style={{ marginTop: '0.85rem', marginBottom: '2.5rem', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: '#7D6B60', fontFamily: 'var(--font-mono)' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
-                    checked={openInNewTab}
-                    onChange={(e) => setOpenInNewTab(e.target.checked)}
-                    style={{ accentColor: '#B85028' }}
-                  />
-                  <span>Open in new tab</span>
-                </label>
-                <span>•</span>
-                <span style={{ color: '#B85028', fontWeight: 600 }}>Audio + 3-2-1 Count + Crackers Celebration</span>
-              </div>
-
-              {/* Stats / Countdown Row (Matching the 00 11 18 00 cards from reference) */}
-              <div className="warm-timer-grid">
-                <div className="warm-timer-card">
-                  <div className="warm-timer-num">20</div>
-                  <div className="warm-timer-label">YEAR</div>
-                </div>
-                <div className="warm-timer-card">
-                  <div className="warm-timer-num">26</div>
-                  <div className="warm-timer-label">EDITION</div>
-                </div>
-                <div className="warm-timer-card">
-                  <div className="warm-timer-num">04</div>
-                  <div className="warm-timer-label">DOMAINS</div>
-                </div>
-                <div className="warm-timer-card">
-                  <div className="warm-timer-num" style={{ color: '#B85028' }}>LIVE</div>
-                  <div className="warm-timer-label">PORTAL</div>
-                </div>
+              <div style={{
+                fontSize: '10.5px',
+                letterSpacing: '0.24em',
+                textTransform: 'uppercase',
+                color: '#00FF66',
+                fontFamily: 'var(--font-mono)',
+                fontWeight: 700
+              }}>
+                MOBILE APPLICATION DEVELOPMENT CLUB
               </div>
             </div>
 
-            {/* RIGHT COLUMN: PERSPECTIVE-TILTED 3D SMARTPHONE */}
-            <div className="warm-phone-stage">
-              {/* Floating Gear Widget */}
-              <div className="warm-gear-floating" title="Engineering Core">
-                ⚙
+            {/* Ceremony Tag */}
+            <div className="warm-pre-tag" style={{ marginBottom: '0.65rem' }}>
+              ✦ OFFICIAL CLUB WEBSITE INAUGURATION ✦
+            </div>
+
+            {/* Main Headline */}
+            <h1 className="warm-hero-title" style={{ fontSize: 'clamp(2.5rem, 5.8vw, 4.2rem)', marginBottom: '1.2rem' }}>
+              Where Code Meets <span className="warm-hero-title-accent">Innovation</span>
+            </h1>
+
+            {/* Short Inaugural Description */}
+            <p className="warm-hero-desc" style={{ fontSize: '1.15rem', maxWidth: '680px', margin: '0 auto 1.8rem auto' }}>
+              With immense pride and honor, Kongu Engineering College inaugurates the official digital portal of the <strong>Mobile Application Development Club (MADC)</strong> — architecting transformative Android, iOS, and cross-platform solutions for campus, industry, and the nation.
+            </p>
+
+            {/* Meta Row Bullets (Straight and Centered) */}
+            <div className="warm-meta-row" style={{ justifyContent: 'center', marginBottom: '2.2rem' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <span className="warm-meta-dot" />
+                Kongu Engineering College
+              </span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <span className="warm-meta-dot" />
+                Mobile Application Club
+              </span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <span className="warm-meta-dot" />
+                madc-xi.vercel.app
+              </span>
+            </div>
+
+            {/* ─── 3. GRAND ATTRACTIVE LAUNCH BUTTON (CENTERPIECE) ─── */}
+            <div className="grand-launch-button-wrapper">
+              {/* Outer animated pulsating aura rings */}
+              <div className="grand-beacon-ring-1" />
+              <div className="grand-beacon-ring-2" />
+
+              <button
+                onClick={handleLaunchClick}
+                id="grand-launch-portal-btn"
+                className="grand-launch-btn"
+                style={{ padding: '1.45rem 4rem', fontSize: '1.32rem' }}
+              >
+                <div className="button-shimmer-sweep" />
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" style={{ filter: 'drop-shadow(0 0 8px rgba(0,255,102,0.9))' }}>
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+                <span>Inaugurate & Launch Website</span>
+              </button>
+            </div>
+
+            {/* Open in New Tab Option */}
+            <div style={{ marginTop: '0.85rem', marginBottom: '2.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.88rem', color: '#7D6B60', fontFamily: 'var(--font-mono)' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={openInNewTab}
+                  onChange={(e) => setOpenInNewTab(e.target.checked)}
+                  style={{ accentColor: '#B85028' }}
+                />
+                <span>Open target site in new tab</span>
+              </label>
+              <span>•</span>
+              <span style={{ color: '#B85028', fontWeight: 600 }}>Audio + 3-2-1 Count + Crackers Celebration</span>
+            </div>
+
+            {/* ─── 4. COUNTDOWN / STATS ROW (STRAIGHT IN A ROW) ─── */}
+            <div className="warm-timer-grid" style={{ justifyContent: 'center' }}>
+              <div className="warm-timer-card" style={{ minWidth: '95px', padding: '1.1rem 1.6rem' }}>
+                <div className="warm-timer-num" style={{ fontSize: '2.2rem' }}>20</div>
+                <div className="warm-timer-label">YEAR</div>
               </div>
-
-              {/* Floating 3D Cube */}
-              <div className="warm-cube-floating" />
-
-              {/* Smartphone Body */}
-              <div className="warm-phone-body">
-                <div className="warm-phone-screen">
-                  {/* Phone Status Bar */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.72rem', color: '#9E8B80', fontFamily: 'var(--font-mono)', marginBottom: '14px', padding: '0 4px' }}>
-                    <span>9:41</span>
-                    <div style={{ width: '42px', height: '12px', background: '#3B2D26', borderRadius: '6px' }} />
-                    <span>5G • 100%</span>
-                  </div>
-
-                  {/* Phone Header */}
-                  <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-                    <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em', fontFamily: 'var(--font-display)' }}>
-                      MADC'26
-                    </div>
-                    <div style={{ fontSize: '0.68rem', color: '#00FF66', fontFamily: 'var(--font-mono)', letterSpacing: '0.14em', textTransform: 'uppercase', marginTop: '2px', fontWeight: 700 }}>
-                      MADC CLUB • BUILD • WIN
-                    </div>
-                  </div>
-
-                  {/* 6 App Challenge Grid Tiles */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', flex: 1 }}>
-                    <div style={{ background: '#C85A32', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', fontSize: '1.35rem', fontWeight: 800, boxShadow: '0 4px 14px rgba(200,90,50,0.3)' }}>
-                      &lt;/&gt;
-                    </div>
-                    <div style={{ background: '#4A6B82', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', fontSize: '1.3rem' }}>
-                      ☁️
-                    </div>
-                    <div style={{ background: '#3E4E59', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', fontSize: '1.3rem' }}>
-                      ⚙️
-                    </div>
-                    <div style={{ background: '#5C3D2E', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', fontSize: '1.3rem' }}>
-                      📱
-                    </div>
-                    <div style={{ background: '#2D3748', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', fontSize: '1.2rem' }}>
-                      🛡️
-                    </div>
-                    <div style={{ background: '#00a843', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', fontSize: '1.35rem', fontWeight: 800, boxShadow: '0 4px 14px rgba(0,168,67,0.3)' }}>
-                      &lt;/&gt;
-                    </div>
-                  </div>
-
-                  {/* Bottom Phone Action bar */}
-                  <div style={{ marginTop: '14px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'center' }}>
-                    <div style={{ width: '80px', height: '4px', background: '#7D6B60', borderRadius: '2px' }} />
-                  </div>
-                </div>
+              <div className="warm-timer-card" style={{ minWidth: '95px', padding: '1.1rem 1.6rem' }}>
+                <div className="warm-timer-num" style={{ fontSize: '2.2rem' }}>26</div>
+                <div className="warm-timer-label">EDITION</div>
+              </div>
+              <div className="warm-timer-card" style={{ minWidth: '95px', padding: '1.1rem 1.6rem' }}>
+                <div className="warm-timer-num" style={{ fontSize: '2.2rem' }}>04</div>
+                <div className="warm-timer-label">DOMAINS</div>
+              </div>
+              <div className="warm-timer-card" style={{ minWidth: '95px', padding: '1.1rem 1.6rem' }}>
+                <div className="warm-timer-num" style={{ fontSize: '2.2rem', color: '#B85028' }}>LIVE</div>
+                <div className="warm-timer-label">PORTAL</div>
               </div>
             </div>
 

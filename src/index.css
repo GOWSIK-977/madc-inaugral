@@ -1704,6 +1704,18 @@ h1, h2, h3, h4, .font-display {
 /* ========================================================
    ATTRACTIVE INAUGURAL STYLES & LAUNCH BUTTON
    ======================================================== */
+.straight-hero-container {
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  z-index: 15;
+}
+
 .inaugural-top-banner {
   display: flex;
   flex-direction: column;
