@@ -7,14 +7,13 @@ export function LaunchPortal({ onLaunchComplete, soundEnabled, onToggleSound }) 
   // Phases: 'idle' -> 'counting' -> 'crackers' -> 'completing'
   const [phase, setPhase] = useState('idle');
   const [count, setCount] = useState(3);
-  const [openInNewTab, setOpenInNewTab] = useState(false);
 
   const canvasRef = useRef(null);
   const animationFrameRef = useRef(null);
   const fireworksRef = useRef([]);
   const particlesRef = useRef([]);
 
-  // Canvas for warm ambient dust/particles (idle) and Fireworks (crackers)
+  // High-performance Canvas Fireworks & Ambient Particles (Zero Lag, 60fps)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -29,100 +28,179 @@ export function LaunchPortal({ onLaunchComplete, soundEnabled, onToggleSound }) 
     };
     window.addEventListener('resize', handleResize);
 
-    // Warm ambient floating motes for idle phase
-    const numMotes = 70;
+    // Warm ambient floating dust motes for idle phase
+    const numMotes = 50;
     const motes = Array.from({ length: numMotes }, () => ({
       x: Math.random() * width,
       y: Math.random() * height,
-      vx: (Math.random() - 0.5) * 0.45,
-      vy: -0.3 - Math.random() * 0.4,
-      size: Math.random() * 2.8 + 1.2,
-      color: Math.random() > 0.5 ? 'rgba(184, 82, 38, 0.4)' : Math.random() > 0.5 ? 'rgba(217, 119, 70, 0.35)' : 'rgba(245, 158, 11, 0.3)'
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: -0.25 - Math.random() * 0.35,
+      size: Math.random() * 2.5 + 1.2,
+      color: Math.random() > 0.5 ? 'rgba(184, 82, 38, 0.35)' : 'rgba(245, 158, 11, 0.3)'
     }));
 
-    // Firework rocket spawner for crackers phase
-    const spawnRocket = () => {
+    // Firework rocket spawner — no cap, wide spread
+    const spawnRocket = (side) => {
+      const colorPalette = [
+        '#00FF66', '#00e5ff', '#F59E0B', '#FF3366',
+        '#FF6B00', '#A855F7', '#FFFFFF', '#FF1493',
+        '#00BFFF', '#FFD700', '#7CFC00', '#FF4500'
+      ];
+      const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+      // Allow rockets from sides too
+      let rx;
+      if (side === 'left')  rx = width * (0.02 + Math.random() * 0.18);
+      else if (side === 'right') rx = width * (0.80 + Math.random() * 0.18);
+      else rx = width * (0.05 + Math.random() * 0.90);
       fireworksRef.current.push({
-        x: width * (0.15 + Math.random() * 0.7),
+        x: rx,
         y: height,
-        targetY: height * (0.12 + Math.random() * 0.42),
-        speed: 11 + Math.random() * 6,
-        color: ['#00FF66', '#00e5ff', '#F59E0B', '#B85028', '#C85A32', '#8B5CF6', '#FFFFFF'][Math.floor(Math.random() * 7)],
+        targetY: height * (0.04 + Math.random() * 0.42),
+        speed: 15 + Math.random() * 9,
+        color,
         trail: []
       });
     };
 
+    // Massive particle explosion with golden star-ring
     const explodeRocket = (x, y, color) => {
-      const n = 95 + Math.floor(Math.random() * 50);
+      const n = 75 + Math.floor(Math.random() * 50);
       for (let i = 0; i < n; i++) {
+        if (particlesRef.current.length > 600) break;
         const angle = Math.random() * Math.PI * 2;
-        const speed = Math.random() * 8.5 + 2.5;
+        const speed = Math.random() * 10 + 2.5;
         particlesRef.current.push({
           x, y,
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
           alpha: 1,
-          decay: 0.012 + Math.random() * 0.015,
+          decay: 0.012 + Math.random() * 0.014,
           color,
           size: Math.random() * 3.5 + 1.5,
-          sparkle: Math.random() > 0.4
+          isSparkle: Math.random() > 0.45
+        });
+      }
+      // Golden star-ring burst
+      for (let i = 0; i < 18; i++) {
+        const angle = (i / 18) * Math.PI * 2;
+        const sp = 6 + Math.random() * 5;
+        particlesRef.current.push({
+          x, y,
+          vx: Math.cos(angle) * sp,
+          vy: Math.sin(angle) * sp,
+          alpha: 1,
+          decay: 0.008 + Math.random() * 0.006,
+          color: '#FFD700',
+          size: 2.8 + Math.random() * 2.5,
+          isSparkle: true
+        });
+      }
+      // White core flash
+      for (let i = 0; i < 10; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        particlesRef.current.push({
+          x, y,
+          vx: Math.cos(angle) * (Math.random() * 4 + 1),
+          vy: Math.sin(angle) * (Math.random() * 4 + 1),
+          alpha: 1,
+          decay: 0.022 + Math.random() * 0.018,
+          color: '#FFFFFF',
+          size: 4 + Math.random() * 3,
+          isSparkle: true
         });
       }
     };
 
     let crackerInterval = null;
+    let soundInterval = null;
     if (phase === 'crackers') {
+      soundFX.playLaunchWarp();
       soundFX.playCrackersExplosion();
+
+      // Rapid rocket launches — 3 every 280ms from all positions
       crackerInterval = setInterval(() => {
         spawnRocket();
         spawnRocket();
-      }, 300);
-      for (let i = 0; i < 5; i++) setTimeout(spawnRocket, i * 110);
+        spawnRocket('left');
+        spawnRocket('right');
+        if (Math.random() > 0.35) spawnRocket();
+      }, 280);
+
+      // Burst of rockets at start
+      for (let i = 0; i < 8; i++) {
+        setTimeout(() => {
+          spawnRocket();
+          spawnRocket('left');
+          spawnRocket('right');
+        }, i * 100);
+      }
+
+      // Repeat cracker sound every 1.8s
+      soundInterval = setInterval(() => {
+        soundFX.playCrackersExplosion();
+      }, 1800);
     }
 
     const render = () => {
       if (phase === 'crackers' || phase === 'completing') {
-        // Deep festive overlay for crisp firework contrast
-        ctx.fillStyle = 'rgba(20, 12, 8, 0.28)';
+        // Deep semi-transparent overlay creates smooth motion trails
+        ctx.fillStyle = 'rgba(10, 5, 2, 0.18)';
         ctx.fillRect(0, 0, width, height);
 
-        // Rockets
+        // Enable additive blending for brilliant glow without expensive shadowBlur
+        ctx.globalCompositeOperation = 'lighter';
+
+        // Update & draw rockets
         for (let i = fireworksRef.current.length - 1; i >= 0; i--) {
           const r = fireworksRef.current[i];
           r.y -= r.speed;
           r.trail.push({ x: r.x, y: r.y });
-          if (r.trail.length > 7) r.trail.shift();
+          if (r.trail.length > 6) r.trail.shift();
+
           ctx.beginPath();
-          r.trail.forEach((p, idx) => idx === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+          r.trail.forEach((p, idx) => (idx === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
           ctx.strokeStyle = r.color;
-          ctx.lineWidth = 2.8;
+          ctx.lineWidth = 2.5;
           ctx.stroke();
+
           ctx.beginPath();
-          ctx.arc(r.x, r.y, 4, 0, Math.PI * 2);
+          ctx.arc(r.x, r.y, 3, 0, Math.PI * 2);
           ctx.fillStyle = '#ffffff';
-          ctx.shadowBlur = 12;
-          ctx.shadowColor = r.color;
           ctx.fill();
-          if (r.y <= r.targetY) { explodeRocket(r.x, r.y, r.color); fireworksRef.current.splice(i, 1); }
+
+          if (r.y <= r.targetY) {
+            explodeRocket(r.x, r.y, r.color);
+            fireworksRef.current.splice(i, 1);
+          }
         }
-        // Particles
+
+        // Update & draw particles (optimized single path operations)
         for (let i = particlesRef.current.length - 1; i >= 0; i--) {
           const p = particlesRef.current[i];
-          p.x += p.vx; p.y += p.vy;
-          p.vy += 0.09; p.vx *= 0.98; p.alpha -= p.decay;
-          if (p.alpha <= 0) { particlesRef.current.splice(i, 1); continue; }
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.08; // Gravity
+          p.vx *= 0.98; // Air resistance
+          p.alpha -= p.decay;
+
+          if (p.alpha <= 0) {
+            particlesRef.current.splice(i, 1);
+            continue;
+          }
+
           ctx.save();
           ctx.globalAlpha = p.alpha;
           ctx.beginPath();
           ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-          ctx.fillStyle = p.sparkle && Math.random() > 0.5 ? '#ffffff' : p.color;
-          ctx.shadowBlur = 16;
-          ctx.shadowColor = p.color;
+          ctx.fillStyle = p.isSparkle && Math.random() > 0.4 ? '#ffffff' : p.color;
           ctx.fill();
           ctx.restore();
         }
+
+        // Reset composite operation
+        ctx.globalCompositeOperation = 'source-over';
       } else {
-        // Clear canvas softly for warm ambient floating motes
+        // Soft ambient floating motes for idle / counting
         ctx.clearRect(0, 0, width, height);
         motes.forEach(m => {
           m.y += m.vy;
@@ -145,42 +223,50 @@ export function LaunchPortal({ onLaunchComplete, soundEnabled, onToggleSound }) 
       window.removeEventListener('resize', handleResize);
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
       if (crackerInterval) clearInterval(crackerInterval);
+      if (soundInterval) clearInterval(soundInterval);
     };
   }, [phase]);
 
-  // Clicking the launch button -> countdown -> crackers -> redirect
+  // Clicking the launch button -> cinematic countdown -> crackers -> redirect
   const handleLaunchClick = () => {
     soundFX.playClick();
-    soundFX.playChargeUp(3.2);
+    soundFX.playChargeUp(3.0);
     setPhase('counting');
     setCount(3);
     soundFX.playCountTick(3);
 
-    setTimeout(() => { setCount(2); soundFX.playCountTick(2); }, 1000);
-    setTimeout(() => { setCount(1); soundFX.playCountTick(1); }, 2000);
+    setTimeout(() => {
+      setCount(2);
+      soundFX.playCountTick(2);
+    }, 1000);
+
+    setTimeout(() => {
+      setCount(1);
+      soundFX.playCountTick(1);
+    }, 2000);
 
     setTimeout(() => {
       setCount(0);
       setPhase('crackers');
+      soundFX.playLaunchWarp();
       soundFX.playCrackersExplosion();
       soundFX.playWelcomeChime();
 
-      // Open website after celebration
+      // Open website after celebration (6s of fireworks!)
       setTimeout(() => {
         setPhase('completing');
-        if (openInNewTab) {
-          window.open(TARGET_URL, '_blank');
-          setTimeout(() => onLaunchComplete(), 600);
-        } else {
-          window.location.href = TARGET_URL;
-        }
-      }, 4500);
+        window.location.href = TARGET_URL;
+      }, 6000);
     }, 3000);
   };
 
   const strokeDashoffset = phase === 'counting'
     ? 314 - (314 * ((3 - count) / 3))
     : 0;
+
+  // Dynamic colors for countdown numbers
+  const countColor = count === 3 ? '#00FF66' : count === 2 ? '#F59E0B' : count === 1 ? '#FF5722' : '#FFFFFF';
+  const countGlow = count === 3 ? '0 0 45px #00FF66' : count === 2 ? '0 0 45px #F59E0B' : count === 1 ? '0 0 50px #FF5722' : '0 0 60px #FFFFFF';
 
   return (
     <div className={`launch-portal-wrapper warm-theme ${phase === 'completing' ? 'fading-out' : ''}`}>
@@ -325,8 +411,8 @@ export function LaunchPortal({ onLaunchComplete, soundEnabled, onToggleSound }) 
               With immense pride and honor, Kongu Engineering College inaugurates the official digital portal of the <strong>Mobile Application Development Club (MADC)</strong> — architecting transformative Android, iOS, and cross-platform solutions for campus, industry, and the nation.
             </p>
 
-            {/* Meta Row Bullets (Straight and Centered) */}
-            <div className="warm-meta-row" style={{ justifyContent: 'center', marginBottom: '2.2rem' }}>
+            {/* Meta Row Bullets */}
+            <div className="warm-meta-row" style={{ justifyContent: 'center', marginBottom: '2.4rem' }}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                 <span className="warm-meta-dot" />
                 Kongu Engineering College
@@ -343,7 +429,6 @@ export function LaunchPortal({ onLaunchComplete, soundEnabled, onToggleSound }) 
 
             {/* ─── 3. GRAND ATTRACTIVE LAUNCH BUTTON (CENTERPIECE) ─── */}
             <div className="grand-launch-button-wrapper">
-              {/* Outer animated pulsating aura rings */}
               <div className="grand-beacon-ring-1" />
               <div className="grand-beacon-ring-2" />
 
@@ -351,7 +436,7 @@ export function LaunchPortal({ onLaunchComplete, soundEnabled, onToggleSound }) 
                 onClick={handleLaunchClick}
                 id="grand-launch-portal-btn"
                 className="grand-launch-btn"
-                style={{ padding: '1.45rem 4rem', fontSize: '1.32rem' }}
+                style={{ padding: '1.45rem 4.2rem', fontSize: '1.35rem' }}
               >
                 <div className="button-shimmer-sweep" />
                 <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" style={{ filter: 'drop-shadow(0 0 8px rgba(0,255,102,0.9))' }}>
@@ -361,55 +446,91 @@ export function LaunchPortal({ onLaunchComplete, soundEnabled, onToggleSound }) 
               </button>
             </div>
 
-
           </main>
         </div>
       )}
 
       {/* ============================================================
-          STAGE 2 — COUNTDOWN 3-2-1
+          STAGE 2 — CINEMATIC 3-2-1 HOLOGRAPHIC COUNTDOWN
           ============================================================ */}
       {phase === 'counting' && (
-        <div className="countdown-hud-container" style={{ zIndex: 30 }}>
+        <div className="cinematic-countdown-overlay">
+          {/* Telemetry Status Pill */}
           <div style={{
-            fontSize: '1rem',
-            color: '#B85028',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '6px 20px',
+            borderRadius: '9999px',
+            background: 'rgba(200, 90, 50, 0.15)',
+            border: '1.5px solid rgba(200, 90, 50, 0.4)',
+            color: '#FF7A45',
             fontFamily: 'var(--font-mono)',
+            fontSize: '0.92rem',
+            fontWeight: 700,
+            letterSpacing: '0.18em',
             textTransform: 'uppercase',
-            letterSpacing: '0.24em',
-            marginBottom: '1rem',
-            fontWeight: 800
+            boxShadow: '0 0 25px rgba(200, 90, 50, 0.2)'
           }}>
-            ✦ Inauguration Countdown ✦
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: countColor, boxShadow: `0 0 10px ${countColor}` }} />
+            T-MINUS 0{count} • INAUGURATION PROTOCOL ACTIVE
           </div>
 
-          <div className="countdown-digits-wrapper" style={{ boxShadow: '0 20px 50px rgba(74, 40, 24, 0.2)', border: '2px solid rgba(184, 82, 38, 0.3)' }}>
-            <svg className="hud-circular-meter" viewBox="0 0 120 120">
+          {/* Holographic Ring Stage with Shockwave and Rotating Concentric Meters */}
+          <div className="countdown-stage-ring">
+            <div className="countdown-outer-ring" />
+            <div className="countdown-middle-ring" style={{ borderColor: countColor }} />
+            <div className="countdown-pulse-shockwave" style={{ borderColor: countColor }} />
+
+            {/* Circular Meter SVG */}
+            <svg className="hud-circular-meter" viewBox="0 0 120 120" style={{ width: '100%', height: '100%' }}>
               <defs>
-                <linearGradient id="warmGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <linearGradient id="countdownGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#00FF66" />
-                  <stop offset="50%" stopColor="#C85A32" />
-                  <stop offset="100%" stopColor="#F59E0B" />
+                  <stop offset="50%" stopColor="#F59E0B" />
+                  <stop offset="100%" stopColor="#FF5722" />
                 </linearGradient>
               </defs>
-              <circle className="hud-meter-bg" cx="60" cy="60" r="50" style={{ stroke: 'rgba(74, 40, 24, 0.15)' }} />
+              <circle className="hud-meter-bg" cx="60" cy="60" r="50" style={{ stroke: 'rgba(255, 255, 255, 0.1)' }} />
               <circle
                 className="hud-meter-progress"
                 cx="60" cy="60" r="50"
-                stroke="url(#warmGrad)"
+                stroke="url(#countdownGrad)"
                 strokeDasharray="314"
                 strokeDashoffset={strokeDashoffset}
+                style={{ strokeWidth: 9 }}
               />
             </svg>
-            <div className="countdown-number" style={{ color: '#2B1911', textShadow: '0 4px 20px rgba(184, 82, 38, 0.4)' }}>
+
+            {/* Big Punch-Scale Countdown Number */}
+            <div
+              key={count}
+              className="countdown-hero-num"
+              style={{ color: countColor, textShadow: countGlow }}
+            >
               {count > 0 ? count : 'GO!'}
             </div>
           </div>
 
-          <div style={{ marginTop: '1.75rem', fontSize: '1.25rem', fontWeight: 800, color: '#2B1911', textAlign: 'center' }}>
-            {count === 3 && 'Initializing MADC Mobile Architecture...'}
-            {count === 2 && 'Connecting Kongu Engineering College Clusters...'}
-            {count === 1 && 'Launching MADC Official Portal...'}
+          {/* Dynamic Telemetry Status */}
+          <div style={{
+            maxWidth: '650px',
+            background: 'rgba(15, 9, 6, 0.85)',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+            borderRadius: '16px',
+            padding: '1rem 2rem',
+            boxShadow: '0 15px 35px rgba(0,0,0,0.5)',
+            fontFamily: 'var(--font-mono)'
+          }}>
+            <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#FFFFFF', marginBottom: '4px' }}>
+              {count === 3 && 'Initializing MADC Mobile Core Architecture...'}
+              {count === 2 && 'Synchronizing Kongu Engineering College Clusters...'}
+              {count === 1 && 'All Systems Armed • Commencing Official Launch!'}
+              {count === 0 && '🚀 Blast Off! Opening MADC Digital Ecosystem!'}
+            </div>
+            <div style={{ fontSize: '0.8rem', color: '#9E8B80', letterSpacing: '0.08em' }}>
+              STATUS: <span style={{ color: countColor, fontWeight: 700 }}>OK (READY)</span> • KEC PERUNDURAI • AUTONOMOUS
+            </div>
           </div>
         </div>
       )}
@@ -425,65 +546,80 @@ export function LaunchPortal({ onLaunchComplete, soundEnabled, onToggleSound }) 
           pointerEvents: 'none'
         }}>
           <div style={{
-            background: 'radial-gradient(circle at center, #FFFFFF 0%, #F8F3EA 100%)',
+            background: 'radial-gradient(ellipse at 50% 30%, #FFFFFF 0%, #F5EEE4 60%, #EDE3D0 100%)',
             border: '3px solid #00FF66',
-            borderRadius: '32px',
-            padding: '2.5rem 3.5rem',
+            borderRadius: '36px',
+            padding: '2.8rem 4rem',
             textAlign: 'center',
-            boxShadow: '0 25px 80px rgba(74, 40, 24, 0.45), 0 0 60px rgba(0, 255, 102, 0.35)',
-            maxWidth: '660px',
+            boxShadow: '0 30px 90px rgba(74, 40, 24, 0.5), 0 0 80px rgba(0, 255, 102, 0.45), 0 0 150px rgba(0,255,102,0.2)',
+            maxWidth: '680px',
             width: '90%',
-            animation: 'modalScaleUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)'
+            animation: 'modalScaleUp 0.55s cubic-bezier(0.16, 1, 0.3, 1)'
           }}>
-            <div style={{ fontSize: '3.5rem', marginBottom: '0.5rem' }}>🎉 🎆 ✨ 🎇</div>
 
-            {/* Logos in celebration popup */}
+            {/* Logos */}
             <div style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '1.2rem',
-              marginBottom: '1rem',
+              gap: '1.4rem',
+              marginBottom: '1.2rem',
               flexWrap: 'wrap'
             }}>
-              <div style={{ background: '#ffffff', padding: '6px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', border: '1px solid rgba(184,82,38,0.2)', boxShadow: '0 4px 12px rgba(74,40,24,0.08)' }}>
-                <img src="/kec-logo.png" alt="KEC" style={{ height: '36px', width: 'auto' }} />
+              <div style={{ background: '#ffffff', padding: '8px 22px', borderRadius: '14px', display: 'flex', alignItems: 'center', border: '1.5px solid rgba(184,82,38,0.2)', boxShadow: '0 6px 18px rgba(74,40,24,0.1)' }}>
+                <img src="/kec-logo.png" alt="KEC" style={{ height: '42px', width: 'auto' }} />
               </div>
-              <div style={{ background: '#120B08', padding: '6px 14px', borderRadius: '12px', display: 'flex', alignItems: 'center', border: '1px solid #00FF66' }}>
-                <img src="/madc-logo.png" alt="MADC" style={{ height: '38px', width: 'auto' }} />
+              <div style={{ background: '#0D0806', padding: '8px 18px', borderRadius: '14px', display: 'flex', alignItems: 'center', border: '2px solid #00FF66', boxShadow: '0 0 20px rgba(0,255,102,0.4)' }}>
+                <img src="/madc-logo.png" alt="MADC" style={{ height: '42px', width: 'auto' }} />
               </div>
             </div>
 
+            {/* Celebration horizontal divider */}
             <div style={{
-              fontSize: '0.9rem', color: '#B85028',
-              fontFamily: 'var(--font-mono)', letterSpacing: '0.2em',
-              textTransform: 'uppercase', marginBottom: '0.5rem', fontWeight: 800
+              width: '80px', height: '3px',
+              background: 'linear-gradient(90deg, #B85028, #00FF66)',
+              borderRadius: '9999px',
+              margin: '0 auto 1rem auto'
+            }} />
+
+            <div style={{
+              fontSize: '0.85rem', color: '#B85028',
+              fontFamily: 'var(--font-mono)', letterSpacing: '0.22em',
+              textTransform: 'uppercase', marginBottom: '0.6rem', fontWeight: 800
             }}>
               Kongu Engineering College (Autonomous)
             </div>
 
             <h1 style={{
-              fontSize: 'clamp(2.2rem, 5vw, 3.2rem)',
+              fontSize: 'clamp(2.2rem, 5vw, 3.4rem)',
               fontWeight: 900, color: '#2B1911',
-              lineHeight: 1.15, marginBottom: '0.75rem',
-              fontFamily: 'var(--font-display)'
+              lineHeight: 1.1, marginBottom: '0.75rem',
+              fontFamily: 'var(--font-display)',
+              letterSpacing: '-0.02em'
             }}>
-              MADC Portal <span style={{ color: '#00a843' }}>Inaugurated!</span>
+              MADC Portal <span style={{
+                background: 'linear-gradient(135deg, #00a843, #00FF66)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>Inaugurated!</span>
             </h1>
 
-            <p style={{ color: '#604E45', fontSize: '1.15rem', marginBottom: '1.5rem', fontWeight: 600 }}>
-              Welcome to the official Mobile Application Development Club digital ecosystem.
+            <p style={{ color: '#604E45', fontSize: '1.1rem', marginBottom: '1.8rem', fontWeight: 600, lineHeight: 1.6 }}>
+              Welcome to the official Mobile Application Development Club
+              digital ecosystem — where ideas become apps.
             </p>
 
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: '0.75rem',
-              padding: '0.75rem 1.75rem',
-              background: 'linear-gradient(135deg, #2B150C 0%, #00a843 100%)',
+              padding: '0.8rem 2rem',
+              background: 'linear-gradient(135deg, #1A0D06 0%, #00a843 100%)',
               borderRadius: '9999px',
-              color: '#FFFFFF', fontFamily: 'var(--font-mono)', fontSize: '0.95rem',
-              boxShadow: '0 8px 20px rgba(0, 168, 67, 0.35)'
+              color: '#FFFFFF', fontFamily: 'var(--font-mono)', fontSize: '1rem',
+              fontWeight: 700,
+              boxShadow: '0 10px 28px rgba(0, 168, 67, 0.5), 0 0 40px rgba(0,168,67,0.25)',
+              letterSpacing: '0.05em'
             }}>
-              <span className="terminal-cursor" style={{ width: '8px', height: '14px', background: '#FFFFFF' }} />
+              <span className="terminal-cursor" style={{ width: '8px', height: '16px', background: '#FFFFFF' }} />
               <span>Opening Club Website now...</span>
             </div>
           </div>

@@ -1825,3 +1825,81 @@ h1, h2, h3, h4, .font-display {
   animation: beaconPulse 3s infinite 0.6s ease-out;
   pointer-events: none;
 }
+
+/* ========================================================
+   CINEMATIC 3-2-1 COUNTDOWN VISUAL EXPERIENCE
+   ======================================================== */
+.cinematic-countdown-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, rgba(35, 20, 15, 0.94) 0%, rgba(15, 9, 6, 0.98) 100%);
+  backdrop-filter: blur(20px);
+  animation: fadeInModal 0.3s ease-out;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.countdown-stage-ring {
+  position: relative;
+  width: 250px;
+  height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+.countdown-outer-ring {
+  position: absolute;
+  inset: -26px;
+  border-radius: 50%;
+  border: 2px dashed rgba(200, 90, 50, 0.45);
+  animation: spin 14s linear infinite;
+}
+
+.countdown-middle-ring {
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  border: 2px dotted rgba(0, 255, 102, 0.55);
+  animation: spinReverse 18s linear infinite;
+}
+
+.countdown-pulse-shockwave {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid rgba(0, 255, 102, 0.85);
+  animation: shockwaveExpand 1s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes shockwaveExpand {
+  0% { transform: scale(0.85); opacity: 1; }
+  100% { transform: scale(1.65); opacity: 0; }
+}
+
+.countdown-hero-num {
+  font-family: var(--font-display);
+  font-size: 7.5rem;
+  font-weight: 900;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: countPunch 0.95s cubic-bezier(0.18, 0.89, 0.32, 1.28) infinite;
+  user-select: none;
+}
+
+@keyframes countPunch {
+  0% { transform: scale(1.4); opacity: 0.3; filter: blur(4px); }
+  35% { transform: scale(1); opacity: 1; filter: blur(0px); }
+  85% { transform: scale(1.04); opacity: 1; }
+  100% { transform: scale(0.96); opacity: 0.85; }
+}
+

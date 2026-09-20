@@ -38,7 +38,7 @@ class SoundFX {
       osc.frequency.setValueAtTime(800, now);
       osc.frequency.exponentialRampToValueAtTime(300, now + 0.04);
 
-      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.setValueAtTime(0.15, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
 
       osc.connect(gain);
@@ -51,39 +51,68 @@ class SoundFX {
     }
   }
 
-  // Futuristic countdown tick beep
+  // Dramatic cinematic countdown tick (Sub thump + digital pulse + rising tension)
   playCountTick(countNumber) {
     if (!this.enabled) return;
     this.init();
     if (!this.ctx) return;
 
     try {
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
       const now = this.ctx.currentTime;
 
-      // Pitch increases as count gets closer to launch
-      const baseFreq = countNumber === 1 ? 1046.5 : countNumber === 2 ? 880 : 659.25;
+      // 1. Sub-bass acoustic impact
+      const subOsc = this.ctx.createOscillator();
+      const subGain = this.ctx.createGain();
+      subOsc.type = 'sine';
+      const subFreq = countNumber === 1 ? 110 : countNumber === 2 ? 90 : 75;
+      subOsc.frequency.setValueAtTime(subFreq, now);
+      subOsc.frequency.exponentialRampToValueAtTime(30, now + 0.28);
 
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(baseFreq, now);
-      osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.25, now + 0.12);
+      subGain.gain.setValueAtTime(0.45, now);
+      subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
 
-      gain.gain.setValueAtTime(0.2, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+      subOsc.connect(subGain);
+      subGain.connect(this.ctx.destination);
+      subOsc.start(now);
+      subOsc.stop(now + 0.32);
 
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
+      // 2. High-energy resonant holographic chime
+      const chimeOsc = this.ctx.createOscillator();
+      const chimeGain = this.ctx.createGain();
+      const pitch = countNumber === 1 ? 1200 : countNumber === 2 ? 960 : 720;
+      chimeOsc.type = 'triangle';
+      chimeOsc.frequency.setValueAtTime(pitch, now);
+      chimeOsc.frequency.exponentialRampToValueAtTime(pitch * 1.5, now + 0.15);
 
-      osc.start(now);
-      osc.stop(now + 0.15);
+      chimeGain.gain.setValueAtTime(0.28, now);
+      chimeGain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+      chimeOsc.connect(chimeGain);
+      chimeGain.connect(this.ctx.destination);
+      chimeOsc.start(now);
+      chimeOsc.stop(now + 0.24);
+
+      // 3. Crisp digital transient click
+      const clickOsc = this.ctx.createOscillator();
+      const clickGain = this.ctx.createGain();
+      clickOsc.type = 'square';
+      clickOsc.frequency.setValueAtTime(2400, now);
+      clickOsc.frequency.exponentialRampToValueAtTime(400, now + 0.03);
+
+      clickGain.gain.setValueAtTime(0.18, now);
+      clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+
+      clickOsc.connect(clickGain);
+      clickGain.connect(this.ctx.destination);
+      clickOsc.start(now);
+      clickOsc.stop(now + 0.04);
     } catch (e) {
       console.warn('Audio tick error:', e);
     }
   }
 
   // Charge-up sound effect when opening button is initiated
-  playChargeUp(durationSec = 2.5) {
+  playChargeUp(durationSec = 2.8) {
     if (!this.enabled) return;
     this.init();
     if (!this.ctx) return;
@@ -91,22 +120,21 @@ class SoundFX {
     try {
       const now = this.ctx.currentTime;
 
-      // Sub-bass oscillator
+      // Sub-bass rising drone
       const subOsc = this.ctx.createOscillator();
       const subGain = this.ctx.createGain();
       subOsc.type = 'sawtooth';
-      subOsc.frequency.setValueAtTime(65, now);
-      subOsc.frequency.exponentialRampToValueAtTime(440, now + durationSec);
+      subOsc.frequency.setValueAtTime(55, now);
+      subOsc.frequency.exponentialRampToValueAtTime(520, now + durationSec);
 
-      // Lowpass filter for smooth futuristic sweep
       const filter = this.ctx.createBiquadFilter();
       filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(150, now);
-      filter.frequency.exponentialRampToValueAtTime(3200, now + durationSec);
-      filter.Q.setValueAtTime(4, now);
+      filter.frequency.setValueAtTime(120, now);
+      filter.frequency.exponentialRampToValueAtTime(3600, now + durationSec);
+      filter.Q.setValueAtTime(5, now);
 
       subGain.gain.setValueAtTime(0.01, now);
-      subGain.gain.linearRampToValueAtTime(0.22, now + durationSec * 0.85);
+      subGain.gain.linearRampToValueAtTime(0.28, now + durationSec * 0.88);
       subGain.gain.linearRampToValueAtTime(0.01, now + durationSec);
 
       subOsc.connect(filter);
@@ -120,7 +148,7 @@ class SoundFX {
     }
   }
 
-  // Hyperspace warp / launch explosion shockwave
+  // Hyperspace launch explosion shockwave
   playLaunchWarp() {
     if (!this.enabled) return;
     this.init();
@@ -143,42 +171,42 @@ class SoundFX {
       const noiseFilter = this.ctx.createBiquadFilter();
       noiseFilter.type = 'bandpass';
       noiseFilter.frequency.setValueAtTime(300, now);
-      noiseFilter.frequency.exponentialRampToValueAtTime(4000, now + 0.3);
-      noiseFilter.frequency.exponentialRampToValueAtTime(120, now + 1.2);
+      noiseFilter.frequency.exponentialRampToValueAtTime(4500, now + 0.3);
+      noiseFilter.frequency.exponentialRampToValueAtTime(100, now + 1.4);
       noiseFilter.Q.setValueAtTime(3, now);
 
       const noiseGain = this.ctx.createGain();
-      noiseGain.gain.setValueAtTime(0.28, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+      noiseGain.gain.setValueAtTime(0.35, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 1.4);
 
       noise.connect(noiseFilter);
       noiseFilter.connect(noiseGain);
       noiseGain.connect(this.ctx.destination);
 
       noise.start(now);
-      noise.stop(now + 1.2);
+      noise.stop(now + 1.4);
 
-      // Deep sub drop
+      // Deep sonic sub drop
       const boomOsc = this.ctx.createOscillator();
       const boomGain = this.ctx.createGain();
       boomOsc.type = 'sine';
-      boomOsc.frequency.setValueAtTime(150, now);
-      boomOsc.frequency.exponentialRampToValueAtTime(32, now + 0.8);
+      boomOsc.frequency.setValueAtTime(160, now);
+      boomOsc.frequency.exponentialRampToValueAtTime(25, now + 0.9);
 
-      boomGain.gain.setValueAtTime(0.35, now);
-      boomGain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+      boomGain.gain.setValueAtTime(0.5, now);
+      boomGain.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
 
       boomOsc.connect(boomGain);
       boomGain.connect(this.ctx.destination);
 
       boomOsc.start(now);
-      boomOsc.stop(now + 0.8);
+      boomOsc.stop(now + 0.9);
     } catch (e) {
       console.warn('Audio launch error:', e);
     }
   }
 
-  // Realistic celebration fireworks & crackers sound
+  // Realistic festive celebration crackers (Authentic crackle burst chain + thunder pops)
   playCrackersExplosion() {
     if (!this.enabled) return;
     this.init();
@@ -187,14 +215,45 @@ class SoundFX {
     try {
       const now = this.ctx.currentTime;
 
-      // Burst of multiple cracker pops
-      const numCrackers = 8;
-      for (let i = 0; i < numCrackers; i++) {
-        const delay = i * 0.12 + Math.random() * 0.08;
-        const popTime = now + delay;
+      // 1. Initial Launch Rocket Whistle
+      const whistleOsc = this.ctx.createOscillator();
+      const whistleGain = this.ctx.createGain();
+      whistleOsc.type = 'sine';
+      whistleOsc.frequency.setValueAtTime(400, now);
+      whistleOsc.frequency.exponentialRampToValueAtTime(2400, now + 0.35);
 
-        // White noise pop
-        const bufferSize = this.ctx.sampleRate * 0.25;
+      whistleGain.gain.setValueAtTime(0.01, now);
+      whistleGain.gain.linearRampToValueAtTime(0.18, now + 0.2);
+      whistleGain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+
+      whistleOsc.connect(whistleGain);
+      whistleGain.connect(this.ctx.destination);
+      whistleOsc.start(now);
+      whistleOsc.stop(now + 0.4);
+
+      // 2. Main Aerial Shell BOOM
+      const shellTime = now + 0.32;
+      const shellOsc = this.ctx.createOscillator();
+      const shellGain = this.ctx.createGain();
+      shellOsc.type = 'sine';
+      shellOsc.frequency.setValueAtTime(180, shellTime);
+      shellOsc.frequency.exponentialRampToValueAtTime(32, shellTime + 0.6);
+
+      shellGain.gain.setValueAtTime(0.55, shellTime);
+      shellGain.gain.exponentialRampToValueAtTime(0.001, shellTime + 0.65);
+
+      shellOsc.connect(shellGain);
+      shellGain.connect(this.ctx.destination);
+      shellOsc.start(shellTime);
+      shellOsc.stop(shellTime + 0.7);
+
+      // 3. Rapid festive garland crackle sequence (Ladi / Celebration crackers)
+      const numCrackles = 24;
+      for (let i = 0; i < numCrackles; i++) {
+        const crackleTime = shellTime + 0.05 + (i * 0.08) + (Math.random() * 0.04);
+
+        // Sharp noise snap
+        const bufferSize = Math.floor(this.ctx.sampleRate * 0.08);
         const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
         const data = buffer.getChannelData(0);
         for (let j = 0; j < bufferSize; j++) {
@@ -205,36 +264,38 @@ class SoundFX {
         noise.buffer = buffer;
 
         const filter = this.ctx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(1200 + Math.random() * 800, popTime);
-        filter.frequency.exponentialRampToValueAtTime(100, popTime + 0.2);
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(1400 + Math.random() * 2200, crackleTime);
+        filter.Q.setValueAtTime(2.5, crackleTime);
 
         const gain = this.ctx.createGain();
-        gain.gain.setValueAtTime(0.35, popTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, popTime + 0.22);
+        const crackVolume = 0.25 + Math.random() * 0.2;
+        gain.gain.setValueAtTime(crackVolume, crackleTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, crackleTime + 0.07);
 
         noise.connect(filter);
         filter.connect(gain);
         gain.connect(this.ctx.destination);
 
-        noise.start(popTime);
-        noise.stop(popTime + 0.25);
+        noise.start(crackleTime);
+        noise.stop(crackleTime + 0.08);
 
-        // Low frequency thud
-        const thud = this.ctx.createOscillator();
-        const thudGain = this.ctx.createGain();
-        thud.type = 'triangle';
-        thud.frequency.setValueAtTime(160 + Math.random() * 40, popTime);
-        thud.frequency.exponentialRampToValueAtTime(40, popTime + 0.18);
+        // Occasional mini-thumps for rhythmic burst impact
+        if (i % 3 === 0) {
+          const miniThump = this.ctx.createOscillator();
+          const miniGain = this.ctx.createGain();
+          miniThump.type = 'triangle';
+          miniThump.frequency.setValueAtTime(140 + Math.random() * 80, crackleTime);
+          miniThump.frequency.exponentialRampToValueAtTime(45, crackleTime + 0.12);
 
-        thudGain.gain.setValueAtTime(0.4, popTime);
-        thudGain.gain.exponentialRampToValueAtTime(0.001, popTime + 0.18);
+          miniGain.gain.setValueAtTime(0.3, crackleTime);
+          miniGain.gain.exponentialRampToValueAtTime(0.001, crackleTime + 0.12);
 
-        thud.connect(thudGain);
-        thudGain.connect(this.ctx.destination);
-
-        thud.start(popTime);
-        thud.stop(popTime + 0.18);
+          miniThump.connect(miniGain);
+          miniGain.connect(this.ctx.destination);
+          miniThump.start(crackleTime);
+          miniThump.stop(crackleTime + 0.13);
+        }
       }
     } catch (e) {
       console.warn('Audio crackers error:', e);
