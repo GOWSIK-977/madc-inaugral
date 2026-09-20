@@ -361,40 +361,6 @@ export function LaunchPortal({ onLaunchComplete, soundEnabled, onToggleSound }) 
               </button>
             </div>
 
-            {/* Open in New Tab Option */}
-            <div style={{ marginTop: '0.85rem', marginBottom: '2.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.88rem', color: '#7D6B60', fontFamily: 'var(--font-mono)' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={openInNewTab}
-                  onChange={(e) => setOpenInNewTab(e.target.checked)}
-                  style={{ accentColor: '#B85028' }}
-                />
-                <span>Open target site in new tab</span>
-              </label>
-              <span>•</span>
-              <span style={{ color: '#B85028', fontWeight: 600 }}>Audio + 3-2-1 Count + Crackers Celebration</span>
-            </div>
-
-            {/* ─── 4. COUNTDOWN / STATS ROW (STRAIGHT IN A ROW) ─── */}
-            <div className="warm-timer-grid" style={{ justifyContent: 'center' }}>
-              <div className="warm-timer-card" style={{ minWidth: '95px', padding: '1.1rem 1.6rem' }}>
-                <div className="warm-timer-num" style={{ fontSize: '2.2rem' }}>20</div>
-                <div className="warm-timer-label">YEAR</div>
-              </div>
-              <div className="warm-timer-card" style={{ minWidth: '95px', padding: '1.1rem 1.6rem' }}>
-                <div className="warm-timer-num" style={{ fontSize: '2.2rem' }}>26</div>
-                <div className="warm-timer-label">EDITION</div>
-              </div>
-              <div className="warm-timer-card" style={{ minWidth: '95px', padding: '1.1rem 1.6rem' }}>
-                <div className="warm-timer-num" style={{ fontSize: '2.2rem' }}>04</div>
-                <div className="warm-timer-label">DOMAINS</div>
-              </div>
-              <div className="warm-timer-card" style={{ minWidth: '95px', padding: '1.1rem 1.6rem' }}>
-                <div className="warm-timer-num" style={{ fontSize: '2.2rem', color: '#B85028' }}>LIVE</div>
-                <div className="warm-timer-label">PORTAL</div>
-              </div>
-            </div>
 
           </main>
         </div>
